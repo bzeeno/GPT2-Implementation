@@ -4,7 +4,7 @@ import torch.nn as nn
 from gpt2_config import GPT2_CONFIG_124M
 from Transformer import TransformerLayer
 
-class LayerNorm(nn.Module):
+class NormLayer(nn.Module):
     def __init__():
         super().__init__()
 
@@ -19,7 +19,7 @@ class GPTModel(nn.Module):
         self.transformer_blocks = nn.Sequential(*[TransformerBlock(cfg) for _ in range(cfg["n_transformer_blocks"])])
         
         # Output layers
-        self.final_layer_norm = LayerNorm(cfg["embedding_dimension"])
+        self.final_layer_norm = NormLayer(cfg["embedding_dimension"])
         self.out_head = nn.Linear(cfg["embedding_dimension"], cfg["vocab_size"])
 
     def forward(self, x):
