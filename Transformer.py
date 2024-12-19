@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
 
+from LayerNormalization import LayerNorm
+
 class TransformerBlock(nn.Module):
     def __init__(self, config):
         super().__init__()
@@ -15,13 +17,9 @@ class TransformerBlock(nn.Module):
         self.second_layerNorm = LayerNorm()
         self.MLP = MLP()
 
-class LayerNorm(nn.Module):
-    def __init__(self):
-        super().__init__()
-
 class MLP(nn.module):
     def __init__(self):
-        super().__init__()
+        super().__init__
 
 class MultiHeadAttention(nn.Module):
     def __init__(self, num_heads, context_length, emdg_dim, dropout_rate, qkv_bias=False):
