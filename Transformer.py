@@ -1,42 +1,50 @@
 import torch
 import torch.nn as nn
 
-class TransformerLayer(nn.Module):
-    def __init__():
-        super().__init__()
-
-
-class CausalAttention(nn.Module):
-    def __init__(self, in_dim, out_dim, dropout, context_length, qkv_bias=False):
-        super().__init__()
-        self.in_dim, self.out_dim = in_dim, out_dim
-        # Initialize query, key, value weight matrices
-        self.query_w = nn.Linear(in_dim, out_dim, bias=qkv_bias)
-        self.key_w = nn.Linear(in_dim, out_dim, bias=qkv_bias)
-        self.value_w = nn.Linear(in_dim, out_dim, bias=qkv_bias)
-        # Initialize dropout
-        self.dropout = nn.Dropout(dropout)
-        # Initialize mask
-        self.register_buffer('mask', torch.triu(torch.ones(context_length, context_length)), diagonal=1)
-
-    def forward(self, x):
-        # Decompose shape of input
-        batch_size, num_tokens, in_dim = x.shape
-        # Get query, key, value vectors for the inputs
-        q, k, v = self.query_w(x), self.key_w(x), self.value_w(x)
-        # Calculate attention scores and create mask
-        attention_scores = q @ k.transpose(1, 2) # transpose input sequence, but keep batches as they are.
-        attention_scores.masked_fill_(self.mask.bool()[:num_tokens][:num_tokens], -torch.inf) # create mask in-line only including up to the number of tokens, where all masked values are set to -infinity
-        # Calculate attention weights
-        attention_weights = nn.Softmax(attention_scores/k.shape[-1]**0.5, dim=-1)
-        attention_weights = self.dropout(attention_weights)
-        # Create context vectors
-        context_vec = attention_weights @ v
-        return context_vec
-
 class MultiHeadAttention(nn.Module):
-    def __init__(self, num_heads, in_dim, out_dim, dropout, context_length, qkv_bias=False):
+    def __init__(self, num_heads, context_length, emdg_dim, dropout_rate, qkv_bias=False):
         super().__init__()
-        self.heads = nn.ModuleList([CausalAttention(in_dim, out_dim, dropout, context_length, qkv_bias) for _ in range(num_heads)])
+        assert(embdg_dim % num_heads == 0), "embedding dimension must be divisible by the number of heads"
+        # Initialize multi-head attention
+        self.num_heads = num_heads
+        self.context_length = context_length
+        self.embdg_dim = emdg_dim
+        self.qkv_bias = qkv_bias
+        self.head_dim = embdg_dim//num_heads # Dimension of each head
+        # Initialize weight vectors for q,k,v
+        self.query_w = nn.Linear(embdg_dim, embdg_dim, bias=qkv_bias)
+        self.key_w = nn.Linear(embdg_dim, embdg_dim, bias=qkv_bias)
+        self.value_w = nn.Linear(embdg_dim, embdg_dim, bias=qkv_bias)
+        # Initialize mask
+        self.register_buffer("mask", torch.triu(torch.ones(context_length, context_length), diagonal=1))
+        # Initialize dropout
+        self.dropout = nn.Dropout(dropout_rate)
+        # Output projection
+        self.out_proj = nn.Linear(embdg_dim, embdg_dim)
+    
     def forward(self, x):
-        return torch.cat([head(x) for head in self.heads], dim=-1)
+        # Get dimensions
+        num_batches, num_tokens, _ = x.shape
+        # Get query, key, value vectors from weight vectors
+        query, key, value = self.query_w(x), self.key_w(x), self.value_w(x) # Dim: [num_batches, num_tokens, embdg_dim]
+        # Transform vectors from [num_batches, num_tokens, embdg_dim] -> [num_batches, num_tokens, num_heads, head_dim]
+        # then -> [num_batches, num_heads, num_tokens, head_dim] to keep num_tokens and head_dim next to each other
+        query = query.view(num_batches, num_tokens, self.num_heads, self.head_dim)
+        query = query.transpose(1,2)
+        key = key.view(num_batches, num_tokens, self.num_heads, self.head_dim)
+        key = key.transpose(1,2)
+        value = value.view(num_batches, num_tokens, self.num_heads, self.head_dim)
+        value = value.transpose(1,2)
+        # Calculate attention scores
+        attn_scores = query @ key.transpose(2, 3)
+        # Apply mask
+        attn_scores.masked_fill_(self.mask.bool()[:num_tokens][:num_tokens], -torch.inf)
+        # Transform attention scores to weights
+        attn_weights = nn.Softmax(attn_scores/key.shape[-1]**0.5, dim=-1)
+        attn_weights = self.dropout(attn_weights)
+        # Create context vector
+        context_vec = attn_weight @ value
+        # Combine context vectors from each head
+        context_vec = context_vec.transpose(1, 2)
+        context_vec = context_vec.contiguous().view(num_batches, num_tokens, self.embdg_dim)
+        return self.out_proj(context_vec)
