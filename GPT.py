@@ -16,7 +16,7 @@ class GPTModel(nn.Module):
         self.pos_embdg_layer = nn.Embedding(cfg["context_length"], cfg["embedding_dimension"])
 
         # Transformer layers
-        self.transformer_layers = nn.Sequential(*[TransformerLayer(cfg) for _ in range(cfg["n_layers"])])
+        self.transformer_blocks = nn.Sequential(*[TransformerBlock(cfg) for _ in range(cfg["n_transformer_blocks"])])
         
         # Output layers
         self.final_layer_norm = LayerNorm(cfg["embedding_dimension"])

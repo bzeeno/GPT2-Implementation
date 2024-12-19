@@ -1,6 +1,28 @@
 import torch
 import torch.nn as nn
 
+class TransformerBlock(nn.Module):
+    def __init__(self, config):
+        super().__init__()
+        self.first_layerNorm = LayerNorm()
+        self.attn_heads = *[MultiHeadAttention(
+            config["n_heads"], 
+            config["context_length"], 
+            config["embedding_dimension"], 
+            config["drop_rate"], 
+            config["qkv_bias"]
+            )]
+        self.second_layerNorm = LayerNorm()
+        self.MLP = MLP()
+
+class LayerNorm(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+class MLP(nn.module):
+    def __init__(self):
+        super().__init__()
+
 class MultiHeadAttention(nn.Module):
     def __init__(self, num_heads, context_length, emdg_dim, dropout_rate, qkv_bias=False):
         super().__init__()
