@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 from gpt2_config import GPT2_CONFIG_124M
-from Transformer import TransformerLayer
+from Transformer import TransformerBlock
 
 class NormLayer(nn.Module):
     def __init__():
