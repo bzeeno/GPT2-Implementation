@@ -7,36 +7,30 @@ class TransformerBlock(nn.Module):
     def __init__(self, config):
         super().__init__()
         self.first_layerNorm = LayerNorm()
-        self.attn_heads = *[MultiHeadAttention(
-            config["n_heads"], 
-            config["context_length"], 
-            config["embedding_dimension"], 
-            config["drop_rate"], 
-            config["qkv_bias"]
-            )]
+        self.attn_heads = *[MultiHeadAttention(config)]
         self.second_layerNorm = LayerNorm()
         self.MLP = MLP()
 
 class MLP(nn.module):
-    def __init__(self):
+    def __init__(self, config):
         super().__init__
 
 class MultiHeadAttention(nn.Module):
-    def __init__(self, num_heads, context_length, emdg_dim, dropout_rate, qkv_bias=False):
+    def __init__(self, config):
         super().__init__()
-        assert(embdg_dim % num_heads == 0), "embedding dimension must be divisible by the number of heads"
+        assert(config.embdg_dim % config.num_heads == 0), "embedding dimension must be divisible by the number of heads"
         # Initialize multi-head attention
-        self.num_heads = num_heads
-        self.context_length = context_length
-        self.embdg_dim = emdg_dim
-        self.qkv_bias = qkv_bias
-        self.head_dim = embdg_dim//num_heads # Dimension of each head
+        self.num_heads = config.num_heads
+        self.context_length = config.context_length
+        self.embdg_dim = config.embedding_dimension
+        self.qkv_bias = config.qkv_bias
+        self.head_dim = config.embdg_dim//config.num_heads # Dimension of each head
         # Initialize weight vectors for q,k,v
-        self.query_w = nn.Linear(embdg_dim, embdg_dim, bias=qkv_bias)
-        self.key_w = nn.Linear(embdg_dim, embdg_dim, bias=qkv_bias)
-        self.value_w = nn.Linear(embdg_dim, embdg_dim, bias=qkv_bias)
+        self.query_w = nn.Linear(config.embedding_dimension, config.embedding_dimension, bias=qkv_bias)
+        self.key_w = nn.Linear(config.embedding_dimension, config.embedding_dimension, bias=qkv_bias)
+        self.value_w = nn.Linear(config.embedding_dimension, config.embedding_dimension, bias=qkv_bias)
         # Initialize mask
-        self.register_buffer("mask", torch.triu(torch.ones(context_length, context_length), diagonal=1))
+        self.register_buffer("mask", torch.triu(torch.ones(config.context_length, config.context_length), diagonal=1))
         # Initialize dropout
         self.dropout = nn.Dropout(dropout_rate)
         # Output projection

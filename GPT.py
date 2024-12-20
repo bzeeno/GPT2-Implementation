@@ -9,16 +9,16 @@ class GPTModel(nn.Module):
     def __init__(self, config):
         super().__init__()
         # Inputs to transformer layers
-        self.token_embdg_layer = nn.Embedding(config["vocab_size"], config["embedding_dimension"])
-        self.pos_embdg_layer = nn.Embedding(config["context_length"], config["embedding_dimension"])
-        self.embdg_dropout = Dropout(config["drop_rate"])
+        self.token_embdg_layer = nn.Embedding(config.vocab_size, config.embedding_dimension)
+        self.pos_embdg_layer = nn.Embedding(config.context_length, config.embedding_dimension)
+        self.embdg_dropout = Dropout(config.drop_rate)
 
         # Transformer layers
-        self.transformer_blocks = nn.Sequential(*[TransformerBlock(config) for _ in range(config["n_transformer_blocks"])])
+        self.transformer_blocks = nn.Sequential(*[TransformerBlock(config) for _ in range(config.n_transformer_blocks)])
         
         # Output layers
-        self.final_layer_norm = LayerNorm(config["embedding_dimension"])
-        self.out_head = nn.Linear(config["embedding_dimension"], config["vocab_size"])
+        self.final_layer_norm = LayerNorm(config.embedding_dimension)
+        self.out_head = nn.Linear(config.embedding_dimension, config.vocab_size)
 
     def forward(self, token_seq):
         # Initialize size and embeddings
