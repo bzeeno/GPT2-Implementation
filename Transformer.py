@@ -6,7 +6,7 @@ from LayerNormalization import LayerNorm
 class TransformerBlock(nn.Module):
     def __init__(self, config):
         super().__init__()
-        self.first_layerNorm = LayerNorm()
+        self.first_layerNorm = LayerNorm(config.embdg_dim)
         self.attn_heads = *[MultiHeadAttention(config)]
         self.second_layerNorm = LayerNorm()
         self.MLP = MLP()
@@ -22,13 +22,13 @@ class MultiHeadAttention(nn.Module):
         # Initialize multi-head attention
         self.num_heads = config.num_heads
         self.context_length = config.context_length
-        self.embdg_dim = config.embedding_dimension
+        self.embdg_dim = config.embdg_dim
         self.qkv_bias = config.qkv_bias
         self.head_dim = config.embdg_dim//config.num_heads # Dimension of each head
         # Initialize weight vectors for q,k,v
-        self.query_w = nn.Linear(config.embedding_dimension, config.embedding_dimension, bias=qkv_bias)
-        self.key_w = nn.Linear(config.embedding_dimension, config.embedding_dimension, bias=qkv_bias)
-        self.value_w = nn.Linear(config.embedding_dimension, config.embedding_dimension, bias=qkv_bias)
+        self.query_w = nn.Linear(config.embdg_dim, config.embdg_dim, bias=qkv_bias)
+        self.key_w = nn.Linear(config.embdg_dim, config.embdg_dim, bias=qkv_bias)
+        self.value_w = nn.Linear(config.embdg_dim, config.embdg_dim, bias=qkv_bias)
         # Initialize mask
         self.register_buffer("mask", torch.triu(torch.ones(config.context_length, config.context_length), diagonal=1))
         # Initialize dropout
