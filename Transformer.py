@@ -7,13 +7,39 @@ class TransformerBlock(nn.Module):
     def __init__(self, config):
         super().__init__()
         self.first_layerNorm = LayerNorm(config.embdg_dim)
-        self.attn_heads = *[MultiHeadAttention(config)]
-        self.second_layerNorm = LayerNorm()
-        self.MLP = MLP()
+        self.attn_heads = MultiHeadAttention(config)
+        self.second_layerNorm = LayerNorm(config.embdg_dim)
+        self.MLP = MLP(config.embdg_dim)
+        self.shortcut_dropout = nn.Dropout(config.drop_rate)
+
+    def forward(self, x):
+        # LayerNorm -> MultiHead Attention -> dropout + shortcut
+        shortcut = x # shortcut connection for multi-head attention
+        x = self.first_layerNorm(x)
+        x = self.MultiHeadAttention(x)
+        x = self.shortcut_dropout(x)
+        x = x + shortcut
+
+        # LayerNorm -> MLP -> dropout + shortcut
+        shortcut = x # Shortcut for MLP
+        x = self.second_layerNorm(x)
+        x = self.MLP(x)
+        x = self.shortcut_dropout(x)
+        x = x + shortcut
+
+        return x
 
 class MLP(nn.module):
-    def __init__(self, config):
-        super().__init__
+    def __init__(self, embdg_dim):
+        super().__init__()
+        self.layers = nn.Sequential(
+            nn.Linear(embdg_dim, 4 * embdg_dim),
+            nn.GELU(),
+            nn.Linear(4 * embdg_dim, embdg_dim)
+        )
+
+    def forward(self, x):
+        return self.layers(x)
 
 class MultiHeadAttention(nn.Module):
     def __init__(self, config):
