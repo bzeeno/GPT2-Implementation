@@ -17,6 +17,10 @@ def main():
     encoded = tokenizer.encode(starting_context)
     encoded_tensor = torch.tensor(encoded).unsqueeze(0)
 
+    # Testing
+    total_params = sum(p.numel() for p in model.parameters())
+    print(f"Total number of parameters: {total_params:,}")
+
     # Run inference on model
 
     # Decode outputs

@@ -18,7 +18,7 @@ class GPTModel(nn.Module):
         
         # Output layers
         self.final_layer_norm = LayerNorm(config.embdg_dim)
-        self.out_head = nn.Linear(config.embdg_dim, config.vocab_size)
+        self.out_head = nn.Linear(config.embdg_dim, config.vocab_size, bias=False)
 
     def forward(self, token_seq):
         # Initialize size and embeddings
