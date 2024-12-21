@@ -24,3 +24,5 @@ def main():
     # Run inference on model
 
     # Decode outputs
+
+main()

@@ -11,7 +11,7 @@ class GPTModel(nn.Module):
         # Inputs to transformer layers
         self.token_embdg_layer = nn.Embedding(config.vocab_size, config.embdg_dim)
         self.pos_embdg_layer = nn.Embedding(config.context_length, config.embdg_dim)
-        self.embdg_dropout = Dropout(config.drop_rate)
+        self.embdg_dropout = nn.Dropout(config.drop_rate)
 
         # Transformer layers
         self.transformer_blocks = nn.Sequential(*[TransformerBlock(config) for _ in range(config.n_transformer_blocks)])

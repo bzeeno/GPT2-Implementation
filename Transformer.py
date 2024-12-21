@@ -29,7 +29,7 @@ class TransformerBlock(nn.Module):
 
         return x
 
-class MLP(nn.module):
+class MLP(nn.Module):
     def __init__(self, embdg_dim):
         super().__init__()
         self.layers = nn.Sequential(
@@ -44,23 +44,23 @@ class MLP(nn.module):
 class MultiHeadAttention(nn.Module):
     def __init__(self, config):
         super().__init__()
-        assert(config.embdg_dim % config.num_heads == 0), "embedding dimension must be divisible by the number of heads"
+        assert(config.embdg_dim % config.n_heads == 0), "embedding dimension must be divisible by the number of heads"
         # Initialize multi-head attention
-        self.num_heads = config.num_heads
+        self.num_heads = config.n_heads
         self.context_length = config.context_length
         self.embdg_dim = config.embdg_dim
         self.qkv_bias = config.qkv_bias
-        self.head_dim = config.embdg_dim//config.num_heads # Dimension of each head
+        self.head_dim = config.embdg_dim//config.n_heads # Dimension of each head
         # Initialize weight vectors for q,k,v
-        self.query_w = nn.Linear(config.embdg_dim, config.embdg_dim, bias=qkv_bias)
-        self.key_w = nn.Linear(config.embdg_dim, config.embdg_dim, bias=qkv_bias)
-        self.value_w = nn.Linear(config.embdg_dim, config.embdg_dim, bias=qkv_bias)
+        self.query_w = nn.Linear(config.embdg_dim, config.embdg_dim, bias=config.qkv_bias)
+        self.key_w = nn.Linear(config.embdg_dim, config.embdg_dim, bias=config.qkv_bias)
+        self.value_w = nn.Linear(config.embdg_dim, config.embdg_dim, bias=config.qkv_bias)
         # Initialize mask
         self.register_buffer("mask", torch.triu(torch.ones(config.context_length, config.context_length), diagonal=1))
         # Initialize dropout
-        self.dropout = nn.Dropout(dropout_rate)
+        self.dropout = nn.Dropout(config.drop_rate)
         # Output projection
-        self.out_proj = nn.Linear(embdg_dim, embdg_dim)
+        self.out_proj = nn.Linear(config.embdg_dim, config.embdg_dim)
     
     def forward(self, x):
         # Get dimensions
