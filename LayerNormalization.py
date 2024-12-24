@@ -14,7 +14,7 @@ class LayerNorm(nn.Module):
         x_mean = x.mean(dim=-1, keepdim=True)
         x_var = x.var(dim=-1, keepdim=True)
         # Normalize x
-        x_norm = (x - x_mean)/torch.sqrt(var + self.epsilon)
+        x_norm = (x - x_mean)/torch.sqrt(x_var + self.epsilon)
         # Add trainable paramters
         return self.scale * x_norm + self.shift
 

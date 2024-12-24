@@ -16,7 +16,7 @@ class TransformerBlock(nn.Module):
         # LayerNorm -> MultiHead Attention -> dropout + shortcut
         shortcut = x # shortcut connection for multi-head attention
         x = self.first_layerNorm(x)
-        x = self.MultiHeadAttention(x)
+        x = self.attn_heads(x)
         x = self.shortcut_dropout(x)
         x = x + shortcut
 
@@ -78,12 +78,13 @@ class MultiHeadAttention(nn.Module):
         # Calculate attention scores
         attn_scores = query @ key.transpose(2, 3)
         # Apply mask
-        attn_scores.masked_fill_(self.mask.bool()[:num_tokens][:num_tokens], -torch.inf)
+        mask_bool = self.mask.bool()[:num_tokens, :num_tokens]
+        attn_scores.masked_fill_(mask_bool, -torch.inf)
         # Transform attention scores to weights
-        attn_weights = nn.Softmax(attn_scores/key.shape[-1]**0.5, dim=-1)
+        attn_weights = torch.softmax(attn_scores/key.shape[-1]**0.5, dim=-1)
         attn_weights = self.dropout(attn_weights)
         # Create context vector
-        context_vec = attn_weight @ value
+        context_vec = attn_weights @ value
         # Combine context vectors from each head
         context_vec = context_vec.transpose(1, 2)
         context_vec = context_vec.contiguous().view(num_batches, num_tokens, self.embdg_dim)
