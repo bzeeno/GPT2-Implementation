@@ -48,7 +48,7 @@ def main():
     print("input:", encoded_tensor)
 
     # Print num of parameters and memory requirements
-    total_params = print_num_paramters(model)
+    total_params = get_num_paramters(model)
     print(f"Total number of parameters: {total_params:,}")
     total_size_mb = get_mem_requirements(total_params)
     print(f"Total size of the model: {total_size_mb:.2f} MB")
