@@ -1,9 +1,9 @@
 import torch
 import torch.nn as nn
 
-from gpt2_config import GPT2_CONFIG_124M
-from Transformer import TransformerBlock
-from LayerNormalization import LayerNorm
+from util.gpt2_config import GPT2_CONFIG_124M
+from gpt.transformer import TransformerBlock
+from gpt.layer_normalization import LayerNorm
 
 class GPTModel(nn.Module):
     def __init__(self, config):
@@ -21,7 +21,7 @@ class GPTModel(nn.Module):
         self.out_head = nn.Linear(config.embdg_dim, config.vocab_size, bias=False)
 
         # Weight tying
-        self.token_embdg_layer.weight = self.out_head.weight
+        # self.token_embdg_layer.weight = self.out_head.weight
 
     def forward(self, token_seq):
         # Initialize size and embeddings

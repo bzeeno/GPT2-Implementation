@@ -2,9 +2,8 @@ import torch
 import torch.nn as nn
 import tiktoken
 
-from gpt2_config import GPT2_CONFIG_124M
-from Transformer import TransformerBlock
-from GPT import GPTModel
+from util.gpt2_config import GPT2_CONFIG_124M
+from gpt.gpt_implementation import GPTModel
 
 def gen_text_sample(model, token_seq, max_new_tokens, context_length):
     for _ in range(max_new_tokens):
@@ -17,12 +16,12 @@ def gen_text_sample(model, token_seq, max_new_tokens, context_length):
         token_seq = torch.cat((token_seq, next_tok), dim=1)
     return token_seq
 
-def encode(text, tokenizer):
+def encode_text_to_token_ids(text, tokenizer):
     encoded = tokenizer.encode(text)
     encoded_tensor = torch.tensor(encoded).unsqueeze(0)
     return encoded_tensor
 
-def decode(token_ids, tokenizer):
+def decode_token_ids_to_text(token_ids, tokenizer):
     flat = token_ids.squeeze(0) # remove batch dimension
     return tokenizer.decode(flat.tolist())
 
@@ -43,7 +42,7 @@ def main():
 
     # Tokenize Input
     tokenizer = tiktoken.get_encoding("gpt2")
-    encoded_tensor = encode(starting_context, tokenizer)
+    encoded_tensor = encode_text_to_token_ids(starting_context, tokenizer)
 
     print("input:", encoded_tensor)
 
@@ -63,6 +62,6 @@ def main():
     print("Output:", out)
     print("Output length:", len(out[0]))
     # Decode outputs
-    print(decode(out, tokenizer))
+    print(decode_token_ids_to_text(out, tokenizer))
 
-main()
+# main()
