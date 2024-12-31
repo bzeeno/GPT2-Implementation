@@ -1,6 +1,7 @@
 import os
 import urllib.request
 import tiktoken
+import time
 
 import torch
 import torch.nn as nn
@@ -63,10 +64,22 @@ def training_loop(model, device, tokenizer, optimizer, num_epochs, start_context
         model.train() # Set to train mode
 
         for x_batch, y_batch in train_dataloader:
+            t0 = time.time() # initial time
+
+            # Train
             optimizer.zero_grad() # Reset gradients to 0
-            loss = calc_loss(model, device, x_batch, y_batch)
+            with torch.autocast(device_type=str(device), dtype=torch.bfloat16):
+                loss = calc_loss(model, device, x_batch, y_batch)
             loss.backward() # calculate gradients
             optimizer.step() # update weights
+
+            torch.cuda.synchronize() # wait until GPU is done
+            t1 = time.time() # end time
+            dt = (t1 - t0)*1000 # delta T in miliseconds
+            tokens_per_sec = (x_batch.size()[0] * x_batch.size()[1])/(t1 - t0)
+            print(f"batch num: {num_batches_processed}, loss: {loss.item()}, dt: {dt:.0f}ms, tokens_per_sec: {tokens_per_sec}")
+
+            # Increment counters
             num_tokens_seen += torch.numel(x_batch)
             num_batches_processed += 1
 
@@ -94,6 +107,7 @@ def training_loop(model, device, tokenizer, optimizer, num_epochs, start_context
 def train():
     torch.manual_seed(24)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    torch.set_float32_matmul_precision('high')
     # Get text data
     data_dir = "data/"
     file_path = data_dir + "the-verdict.txt"
@@ -174,7 +188,7 @@ def plot_losses(train_losses, val_losses, num_epochs, num_tokens_seen):
 
     ax1.legend(loc="upper right")
     fig.tight_layout()
-    plt.savefig('losses.png', bbox_inches='tight')
+    # plt.savefig('losses.png', bbox_inches='tight')
     plt.show()
 
 if __name__ == "__main__":
@@ -189,4 +203,4 @@ if __name__ == "__main__":
         num_tokens_seen = num_tokens_seen
     )
     # Save Model
-    torch.save(model.state_dict(), "model.pth")
+    # torch.save(model.state_dict(), "model.pth")
