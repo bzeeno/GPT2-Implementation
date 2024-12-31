@@ -14,6 +14,6 @@ class GPT2_CONFIG_124M:
 class TRAIN_SETTINGS:
     learning_rate: float = 5e-4
     train_ratio: float = 0.9
-    num_epochs: int = 10
+    num_epochs: int = 20
     batch_size: int = 2    
     weight_decay: float = 0.1

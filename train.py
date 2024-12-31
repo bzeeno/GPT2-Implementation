@@ -174,6 +174,7 @@ def plot_losses(train_losses, val_losses, num_epochs, num_tokens_seen):
 
     ax1.legend(loc="upper right")
     fig.tight_layout()
+    plt.savefig('losses.png', bbox_inches='tight')
     plt.show()
 
 if __name__ == "__main__":
@@ -187,6 +188,5 @@ if __name__ == "__main__":
         num_epochs = epochs_tensor,
         num_tokens_seen = num_tokens_seen
     )
-    plt.savefig("losses.pdf")
     # Save Model
     torch.save(model.state_dict(), "model.pth")

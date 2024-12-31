@@ -21,7 +21,18 @@ class GPTModel(nn.Module):
         self.out_head = nn.Linear(config.embdg_dim, config.vocab_size, bias=False)
 
         # Weight tying
-        # self.token_embdg_layer.weight = self.out_head.weight
+        self.token_embdg_layer.weight = self.out_head.weight
+
+        # Initialize model
+        self.apply(self._init_weights)
+
+    def _init_weights(self, module):
+        if isinstance(module, nn.Linear):
+            torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
+            if module.bias is not None:
+                torch.nn.init.zeros_(module.bias)
+        elif isinstance(module, nn.Embedding):
+            torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
 
     def forward(self, token_seq):
         # Initialize size and embeddings
