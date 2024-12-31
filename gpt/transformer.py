@@ -75,6 +75,7 @@ class MultiHeadAttention(nn.Module):
         key = key.transpose(1,2)
         value = value.view(num_batches, num_tokens, self.num_heads, self.head_dim)
         value = value.transpose(1,2)
+
         # Calculate attention scores
         attn_scores = query @ key.transpose(2, 3)
         # Apply mask
@@ -85,6 +86,7 @@ class MultiHeadAttention(nn.Module):
         attn_weights = self.dropout(attn_weights)
         # Create context vector
         context_vec = attn_weights @ value
+
         # Combine context vectors from each head
         context_vec = context_vec.transpose(1, 2)
         context_vec = context_vec.contiguous().view(num_batches, num_tokens, self.embdg_dim)
