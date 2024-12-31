@@ -34,7 +34,7 @@ def get_mem_requirements(total_params):
     total_size_mb = total_size_bytes / (1024 * 1024)
     return total_size_mb
 
-def main():
+if __name__ == "__main__":
     torch.manual_seed(24)
     model = GPTModel(GPT2_CONFIG_124M)
     model.eval()
@@ -63,5 +63,3 @@ def main():
     print("Output length:", len(out[0]))
     # Decode outputs
     print(decode_token_ids_to_text(out, tokenizer))
-
-# main()
