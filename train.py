@@ -124,6 +124,7 @@ def train():
     # Get model and optimizer
     model = GPTModel(GPT2_CONFIG_124M)
     model.to(device)
+    model = torch.compile(model, backend="inductor")
     optimizer = torch.optim.AdamW(model.parameters(), lr=TRAIN_SETTINGS.learning_rate, weight_decay=TRAIN_SETTINGS.weight_decay)
     tokenizer = tiktoken.get_encoding("gpt2")
 
